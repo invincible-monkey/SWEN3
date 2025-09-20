@@ -11,10 +11,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.OffsetDateTime;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentServiceImplTest {
@@ -52,5 +55,80 @@ class DocumentServiceImplTest {
         // Assert: Verify the result is as expected
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("Test Document");
+    }
+
+    @Test
+    void getDocument_whenNotFound_thenThrowException() {
+        // Arrange
+        long documentId = 99L;
+        when(documentRepository.findById(documentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class, () -> {
+            documentService.getDocument(documentId);
+        });
+    }
+
+    @Test
+    void updateDocument_whenExists_thenReturnsUpdatedDto() {
+        // Arrange
+        long documentId = 1L;
+        Document existingDocument = Document.builder().id(documentId).title("Old Title").build();
+        DocumentDto updateRequestDto = DocumentDto.builder().title("New Title").content("New content").build();
+
+        when(documentRepository.findById(documentId)).thenReturn(Optional.of(existingDocument));
+        when(documentRepository.save(any(Document.class))).thenAnswer(invocation -> invocation.getArgument(0)); // Return the saved entity
+        when(documentMapper.entityToDto(any(Document.class))).thenAnswer(invocation -> {
+            Document savedDoc = invocation.getArgument(0);
+            return DocumentDto.builder().id(savedDoc.getId()).title(savedDoc.getTitle()).content(savedDoc.getContent()).build();
+        });
+
+
+        // Act
+        DocumentDto result = documentService.updateDocument(documentId, updateRequestDto);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.getTitle()).isEqualTo("New Title");
+        assertThat(result.getContent()).isEqualTo("New content");
+    }
+
+    @Test
+    void updateDocument_whenNotFound_thenThrowException() {
+        // Arrange
+        long documentId = 99L;
+        DocumentDto updateRequestDto = DocumentDto.builder().title("New Title").build();
+        when(documentRepository.findById(documentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class, () -> {
+            documentService.updateDocument(documentId, updateRequestDto);
+        });
+    }
+
+    @Test
+    void deleteDocument_whenExists_thenDeletesDocument() {
+        // Arrange
+        long documentId = 1L;
+        when(documentRepository.existsById(documentId)).thenReturn(true);
+        doNothing().when(documentRepository).deleteById(documentId);
+
+        // Act
+        documentService.deleteDocument(documentId);
+
+        // Assert
+        verify(documentRepository, times(1)).deleteById(documentId);
+    }
+
+    @Test
+    void deleteDocument_whenNotFound_thenThrowException() {
+        // Arrange
+        long documentId = 99L;
+        when(documentRepository.existsById(documentId)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class, () -> {
+            documentService.deleteDocument(documentId);
+        });
     }
 }
