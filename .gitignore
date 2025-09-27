@@ -4,6 +4,9 @@
 # Ignore macOS system files
 .DS_Store
 
+# IntelliJ IDE specific
+.idea/
+
 ### Eclipse ###
 .metadata
 bin/
