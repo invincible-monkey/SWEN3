@@ -1,6 +1,7 @@
 package at.technikum_wien.swen3.paperless.service;
 
 import at.technikum_wien.swen3.paperless.dto.DocumentDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -9,7 +10,7 @@ public interface DocumentService {
 
     List<DocumentDto> getAllDocuments();
 
-    DocumentDto createDocument(DocumentDto documentDto);
+    DocumentDto createDocument(String title, MultipartFile file);
 
     DocumentDto updateDocument(Long id, DocumentDto documentDto);
 

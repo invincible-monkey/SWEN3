@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,9 +17,9 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    @PostMapping
-    public ResponseEntity<DocumentDto> createDocument(@RequestBody DocumentDto documentDto) {
-        DocumentDto createdDocument = documentService.createDocument(documentDto);
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<DocumentDto> createDocument(@RequestParam("title") String title, @RequestParam("file") MultipartFile file) {
+        DocumentDto createdDocument = documentService.createDocument(title, file);
         return new ResponseEntity<>(createdDocument, HttpStatus.CREATED);
     }
 

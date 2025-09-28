@@ -28,4 +28,7 @@ public class Document {
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private OffsetDateTime createdDate;
+
+    @Column(nullable = false)
+    private String storagePath;
 }
