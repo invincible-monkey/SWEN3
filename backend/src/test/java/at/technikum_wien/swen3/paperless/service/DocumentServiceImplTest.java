@@ -9,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 import java.util.NoSuchElementException;
@@ -28,8 +30,33 @@ class DocumentServiceImplTest {
     @Mock
     private DocumentMapper documentMapper;
 
+    @Mock
+    private MinioStorageService minioStorageService;
+
     @InjectMocks
     private DocumentServiceImpl documentService;
+
+    @Test
+    void createDocument_whenCalled_thenSavesAndReturnsDto() {
+        // Arrange
+        String title = "New Test Document";
+        MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", "test data".getBytes());
+        String storagePath = "unique-path-123";
+        Document savedDocument = Document.builder().id(1L).title(title).storagePath(storagePath).build();
+        DocumentDto expectedDto = DocumentDto.builder().id(1L).title(title).storagePath(storagePath).build();
+
+        when(minioStorageService.save(file)).thenReturn(storagePath);
+        when(documentRepository.save(any(Document.class))).thenReturn(savedDocument);
+        when(documentMapper.entityToDto(savedDocument)).thenReturn(expectedDto);
+
+        // Act
+        DocumentDto result = documentService.createDocument(title, file);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.getTitle()).isEqualTo(title);
+        assertThat(result.getStoragePath()).isEqualTo(storagePath);
+    }
 
     @Test
     void getDocument_whenExists_thenReturnDocumentDto() {

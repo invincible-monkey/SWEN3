@@ -49,6 +49,22 @@ services:
       DB_USER: paperless_user
       DB_PASSWORD: paperless_password
 
+  paperless-ui:
+    build: ./frontend
+    container_name: paperless_ui
+
+  nginx:
+    image: nginx:latest
+    container_name: paperless_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - paperless-rest-api
+      - paperless-ui
+
+
 volumes:
   postgres_data:
   minio_data:
