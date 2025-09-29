@@ -27,9 +27,11 @@ export async function uploadDocument(title: string, file: File): Promise<Documen
 	});
 
 	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`Failed to upload document: ${errorText}`);
-	}
+        const errorBody = await response.text();
+        console.error("Failed to upload. Server response:", errorBody);
+		
+        throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    }
 	return await response.json();
 }
 
