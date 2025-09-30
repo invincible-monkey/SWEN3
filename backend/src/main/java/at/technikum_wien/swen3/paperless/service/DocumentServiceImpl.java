@@ -6,6 +6,8 @@ import at.technikum_wien.swen3.paperless.mapper.DocumentMapper;
 import at.technikum_wien.swen3.paperless.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,6 +18,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentMapper documentMapper;
+    private final MinioStorageService minioStorageService;
 
     @Override
     public DocumentDto getDocument(Long id) {
@@ -31,15 +34,24 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public DocumentDto createDocument(DocumentDto documentDto) {
-        Document documentToSave = documentMapper.dtoToEntity(documentDto);
-        Document savedDocument = documentRepository.save(documentToSave);
+    @Transactional
+    public DocumentDto createDocument(String title, MultipartFile file) {
+        // Store the file in MinIO
+        String storagePath = minioStorageService.save(file);
+
+        // Create the document metadata
+        Document newDoc = new Document();
+        newDoc.setTitle(title);
+        newDoc.setStoragePath(storagePath);
+
+        // Save metadata to postgres
+        Document savedDocument = documentRepository.save(newDoc);
         return documentMapper.entityToDto(savedDocument);
     }
 
     @Override
     public DocumentDto updateDocument(Long id, DocumentDto documentDto) {
-        // First, check if the document exists.
+        // Check if the document exists.
         Document existingDocument = documentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Document not found with id: " + id));
 

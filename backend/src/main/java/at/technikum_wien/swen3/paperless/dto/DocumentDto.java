@@ -14,4 +14,5 @@ public class DocumentDto {
     private String title;
     private String content;
     private OffsetDateTime createdDate;
+    private String storagePath;
 }
