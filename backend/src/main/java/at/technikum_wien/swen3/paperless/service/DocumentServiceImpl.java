@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Objects;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,6 +37,9 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     @Transactional
     public DocumentDto createDocument(String title, MultipartFile file) {
+        if (file.isEmpty() || !Objects.equals(file.getContentType(), "application/pdf")) {
+            throw new IllegalArgumentException("Invalid file: Please upload a PDF document.");
+        }
         // Store the file in MinIO
         String storagePath = minioStorageService.save(file);
 
