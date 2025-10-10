@@ -63,7 +63,7 @@ public class DocumentServiceImpl implements DocumentService {
         log.info("Document metadata saved to database with ID: {}", savedDocument.getId());
 
         log.info("Sending message for document ID {} to RabbitMQ.", savedDocument.getId());
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, savedDocument.getId());
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, String.valueOf(savedDocument.getId()));
 
         return documentMapper.entityToDto(savedDocument);
     }
