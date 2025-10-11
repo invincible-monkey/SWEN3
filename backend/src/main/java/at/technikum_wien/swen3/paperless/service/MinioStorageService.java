@@ -1,5 +1,6 @@
 package at.technikum_wien.swen3.paperless.service;
 
+import at.technikum_wien.swen3.paperless.exception.StorageException;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -36,7 +37,7 @@ public class MinioStorageService {
             return objectName;
         } catch (Exception e) {
             log.error("Error while uploading file to MinIO", e);
-            throw new RuntimeException("Error while uploading file to MinIO", e);
+            throw new StorageException("Error while uploading file to MinIO", e);
         }
     }
 
