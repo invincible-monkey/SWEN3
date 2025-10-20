@@ -1,1 +1,6 @@
 pika
+pytesseract
+Pillow
+pdf2image
+minio
+requests
