@@ -31,4 +31,7 @@ public class Document {
 
     @Column(nullable = false)
     private String storagePath;
+
+    @Column(nullable = false)
+    private String status;
 }
