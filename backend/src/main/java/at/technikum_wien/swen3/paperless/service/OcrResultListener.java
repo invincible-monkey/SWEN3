@@ -26,6 +26,8 @@ public class OcrResultListener {
                 document.setContent(result.getContentText());
                 log.info("Successfully updated content for document ID: {}", document.getId());
 
+                documentRepository.save(document);
+
                 log.info("Sending message to GenAI queue for document ID: {}", document.getId());
                 rabbitTemplate.convertAndSend(
                         RabbitMQConfig.EXCHANGE_NAME,
@@ -34,8 +36,8 @@ public class OcrResultListener {
                 );
             } else {
                 log.error("OCR failed for document ID: {}. Reason: {}", document.getId(), result.getErrorDetails());
+                documentRepository.save(document);
             }
-            documentRepository.save(document);
         });
     }
 }
