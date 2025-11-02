@@ -58,6 +58,7 @@ public class DocumentServiceImpl implements DocumentService {
         newDoc.setTitle(title);
         newDoc.setStoragePath(storagePath);
         newDoc.setStatus("PROCESSING");
+        newDoc.setFileSize(file.getSize());
 
         // Save metadata to postgres
         Document savedDocument = documentRepository.save(newDoc);

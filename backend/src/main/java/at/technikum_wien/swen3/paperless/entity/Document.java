@@ -34,4 +34,10 @@ public class Document {
 
     @Column(nullable = false)
     private String status;
+
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    @Column
+    private long fileSize;
 }

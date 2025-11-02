@@ -16,4 +16,6 @@ public class DocumentDto {
     private OffsetDateTime createdDate;
     private String storagePath;
     private String status;
+    private String summary;
+    private long fileSize;
 }
