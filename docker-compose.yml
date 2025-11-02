@@ -113,6 +113,14 @@ services:
     depends_on:
       - paperless-rest-api
       - paperless-ui
+  
+  adminer:
+    image: adminer
+    container_name: paperless_adminer
+    ports:
+      - "9091:8080"
+    depends_on:
+      - postgres
 
 
 volumes:
