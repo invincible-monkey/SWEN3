@@ -46,6 +46,21 @@ services:
       MINIO_SECRET_KEY: minioadmin
       API_URL: http://paperless-rest-api:8080
 
+  genai-worker:
+    build: ./workers/genai-worker
+    container_name: paperless_genai_worker
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      paperless-rest-api:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: user
+      RABBITMQ_PASS: password
+      API_URL: http://paperless-rest-api:8080
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+
   minio:
     image: minio/minio:latest
     container_name: paperless_minio
