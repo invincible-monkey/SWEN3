@@ -15,4 +15,6 @@ public interface DocumentService {
     DocumentDto updateDocument(Long id, DocumentDto documentDto);
 
     void deleteDocument(Long id);
+
+    String getDocumentDownloadUrl(Long id);
 }

@@ -92,4 +92,11 @@ public class DocumentServiceImpl implements DocumentService {
         }
         documentRepository.deleteById(id);
     }
+
+    @Override
+    public String getDocumentDownloadUrl(Long id) {
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Document not found with id: " + id));
+        return minioStorageService.getPresignedUrl(document.getStoragePath());
+    }
 }

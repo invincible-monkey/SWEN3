@@ -1,10 +1,8 @@
 package at.technikum_wien.swen3.paperless.service;
 
 import at.technikum_wien.swen3.paperless.exception.StorageException;
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import io.minio.*;
+import io.minio.http.Method;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +53,22 @@ public class MinioStorageService {
         } catch (Exception e) {
             log.error("Error while creating MinIO bucket", e);
             throw new RuntimeException("Error while creating MinIO bucket", e);
+        }
+    }
+
+    public String getPresignedUrl(String objectName) {
+        try {
+            return minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .expiry(1, TimeUnit.MINUTES) // URL is valid for 1 minute
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Error generating presigned URL for object: {}", objectName, e);
+            throw new StorageException("Could not generate download URL", e);
         }
     }
 }
