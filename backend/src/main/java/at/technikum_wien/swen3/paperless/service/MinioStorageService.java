@@ -4,8 +4,8 @@ import at.technikum_wien.swen3.paperless.exception.StorageException;
 import io.minio.*;
 import io.minio.http.Method;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,11 +14,18 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class MinioStorageService {
 
-    private final MinioClient minioClient;
+    private final MinioClient minio;
+    private final MinioClient minioPublic;
+
+    public MinioStorageService(
+            @Qualifier("minioInternal") MinioClient minio,
+            @Qualifier("minioPublic") MinioClient minioPublic) {
+        this.minio = minio;
+        this.minioPublic = minioPublic;
+    }
 
     @Value("${minio.bucket.name}")
     private String bucketName;
@@ -26,7 +33,7 @@ public class MinioStorageService {
     public String save(MultipartFile file) {
         try {
             String objectName = UUID.randomUUID().toString();
-            minioClient.putObject(
+            minio.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .object(objectName)
@@ -43,9 +50,9 @@ public class MinioStorageService {
     @PostConstruct
     private void createBucketIfNotExists() {
         try {
-            boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+            boolean found = minio.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
             if (!found) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+                minio.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
                 log.info("MinIO bucket '{}' created.", bucketName);
             } else {
                 log.info("MinIO bucket '{}' already exists.", bucketName);
@@ -58,12 +65,13 @@ public class MinioStorageService {
 
     public String getPresignedUrl(String objectName) {
         try {
-            return minioClient.getPresignedObjectUrl(
+            return minioPublic.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.GET)
                             .bucket(bucketName)
                             .object(objectName)
-                            .expiry(1, TimeUnit.MINUTES) // URL is valid for 1 minute
+                            .expiry(1, TimeUnit.MINUTES)
+                            .region("us-east-1")
                             .build()
             );
         } catch (Exception e) {
