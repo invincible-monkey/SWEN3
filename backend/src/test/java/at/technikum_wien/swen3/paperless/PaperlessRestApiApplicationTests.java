@@ -15,9 +15,13 @@ class PaperlessRestApiApplicationTests {
 
     @TestConfiguration
     static class TestConfig {
-        @Bean
-        @Primary
-        public MinioClient minioClient() {
+        @Bean(name = "minioInternal")
+        public MinioClient minioInternal() {
+            return Mockito.mock(MinioClient.class);
+        }
+
+        @Bean(name = "minioPublic")
+        public MinioClient minioPublic() {
             return Mockito.mock(MinioClient.class);
         }
     }
