@@ -46,4 +46,11 @@ public class DocumentController {
         documentService.deleteDocument(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/download-url")
+    public ResponseEntity<String> getDocumentDownloadUrl(@PathVariable Long id) {
+        String url = documentService.getDocumentDownloadUrl(id);
+        // Return URL as JSON object
+        return ResponseEntity.ok("{\"url\":\"" + url + "\"}");
+    }
 }

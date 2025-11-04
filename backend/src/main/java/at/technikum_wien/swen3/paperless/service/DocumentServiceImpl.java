@@ -58,6 +58,7 @@ public class DocumentServiceImpl implements DocumentService {
         newDoc.setTitle(title);
         newDoc.setStoragePath(storagePath);
         newDoc.setStatus("PROCESSING");
+        newDoc.setFileSize(file.getSize());
 
         // Save metadata to postgres
         Document savedDocument = documentRepository.save(newDoc);
@@ -90,5 +91,12 @@ public class DocumentServiceImpl implements DocumentService {
             throw new NoSuchElementException("Document not found with id: " + id);
         }
         documentRepository.deleteById(id);
+    }
+
+    @Override
+    public String getDocumentDownloadUrl(Long id) {
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Document not found with id: " + id));
+        return minioStorageService.getPresignedUrl(document.getStoragePath());
     }
 }

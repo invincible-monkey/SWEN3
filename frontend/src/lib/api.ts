@@ -4,6 +4,9 @@ export interface DocumentDto {
 	content: string;
 	createdDate: string;
 	storagePath: string;
+	status: string;
+	summary: string;
+    fileSize: number;
 }
 
 const API_BASE = '/api/documents';
@@ -64,4 +67,13 @@ export async function deleteDocument(id: number): Promise<void> {
 	if (!response.ok) {
 		throw new Error('Failed to delete document');
 	}
+}
+
+export async function getDownloadUrl(id: number): Promise<string> {
+    const response = await fetch(`${API_BASE}/${id}/download-url`);
+    if (!response.ok) {
+        throw new Error('Failed to get download URL');
+    }
+    const data = await response.json();
+    return data.url;
 }

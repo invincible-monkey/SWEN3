@@ -20,6 +20,12 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY = "document.ocr";
     public static final String OCR_RESULT_ROUTING_KEY = "document.ocr.result";
 
+    public static final String GENAI_QUEUE_NAME = "genai-queue";
+    public static final String GENAI_RESULT_QUEUE_NAME = "genai-result-queue";
+
+    public static final String GENAI_ROUTING_KEY = "document.genai";
+    public static final String GENAI_RESULT_ROUTING_KEY = "document.genai.result";
+
     @Bean
     Queue queue() {
         return new Queue(QUEUE_NAME, false);
@@ -28,6 +34,16 @@ public class RabbitMQConfig {
     @Bean
     Queue ocrResultQueue() {
         return new Queue(OCR_RESULT_QUEUE_NAME, false);
+    }
+
+    @Bean
+    Queue genaiQueue() {
+        return new Queue(GENAI_QUEUE_NAME, false);
+    }
+
+    @Bean
+    Queue genaiResultQueue() {
+        return new Queue(GENAI_RESULT_QUEUE_NAME, false);
     }
 
     @Bean
@@ -43,6 +59,16 @@ public class RabbitMQConfig {
     @Bean
     Binding ocrResultBinding(Queue ocrResultQueue, TopicExchange exchange) {
         return BindingBuilder.bind(ocrResultQueue).to(exchange).with(OCR_RESULT_ROUTING_KEY);
+    }
+
+    @Bean
+    Binding genaiBinding(Queue genaiQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(genaiQueue).to(exchange).with(GENAI_ROUTING_KEY);
+    }
+
+    @Bean
+    Binding genaiResultBinding(Queue genaiResultQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(genaiResultQueue).to(exchange).with(GENAI_RESULT_ROUTING_KEY);
     }
 
     @Bean

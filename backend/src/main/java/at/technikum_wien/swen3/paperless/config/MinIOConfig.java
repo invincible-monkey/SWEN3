@@ -4,12 +4,16 @@ import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class MinIOConfig {
 
     @Value("${minio.url}")
-    private String url;
+    private String internalUrl;
+
+    @Value("${minio.public.url:${minio.url}}")
+    private String publicUrl;
 
     @Value("${minio.access.key}")
     private String accessKey;
@@ -17,10 +21,19 @@ public class MinIOConfig {
     @Value("${minio.secret.key}")
     private String secretKey;
 
-    @Bean
-    public MinioClient minioClient() {
+    @Bean(name = "minioInternal")
+    @Primary
+    public MinioClient minioInternal() {
         return MinioClient.builder()
-                .endpoint(url)
+                .endpoint(internalUrl)
+                .credentials(accessKey, secretKey)
+                .build();
+    }
+
+    @Bean(name = "minioPublic")
+    public MinioClient minioPublic() {
+        return MinioClient.builder()
+                .endpoint(publicUrl)
                 .credentials(accessKey, secretKey)
                 .build();
     }
