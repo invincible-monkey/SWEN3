@@ -1,14 +1,25 @@
 package at.technikum_wien.swen3.paperless.controller;
 
+import at.technikum_wien.swen3.paperless.config.RabbitMQConfig;
 import at.technikum_wien.swen3.paperless.dto.DocumentDto;
+import at.technikum_wien.swen3.paperless.entity.Document;
+import at.technikum_wien.swen3.paperless.entity.Tag;
+import at.technikum_wien.swen3.paperless.mapper.DocumentMapper;
+import at.technikum_wien.swen3.paperless.repository.DocumentRepository;
+import at.technikum_wien.swen3.paperless.repository.ElasticSearchRepository;
+import at.technikum_wien.swen3.paperless.repository.TagRepository;
+import at.technikum_wien.swen3.paperless.search.DocumentSearchEntity;
 import at.technikum_wien.swen3.paperless.service.DocumentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -16,6 +27,36 @@ import java.util.List;
 public class DocumentController {
 
     private final DocumentService documentService;
+
+    @Autowired
+    private TagRepository tagRepository;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private DocumentRepository documentRepository;
+    @Autowired
+    private DocumentMapper documentMapper;
+    @Autowired
+    private ElasticSearchRepository elasticSearchRepository;
+
+    @GetMapping("/search")
+    public List<DocumentDto> searchDocuments(@RequestParam String query) {
+        // 1. Search method
+        List<DocumentSearchEntity> searchResults = elasticSearchRepository.searchByQuery(query);
+
+        // 2. Extract the IDs
+        List<Long> ids = searchResults.stream()
+                .map(DocumentSearchEntity::getId)
+                .collect(Collectors.toList());
+
+        // 3. Fetch full details from the Database
+        List<Document> docs = documentRepository.findAllById(ids);
+
+        // 4. Map to DTOs so the frontend gets exactly what it expects
+        return docs.stream()
+                .map(documentMapper::entityToDto)
+                .collect(Collectors.toList());
+    }
 
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<DocumentDto> createDocument(@RequestParam("title") String title, @RequestParam("file") MultipartFile file) {
@@ -52,5 +93,50 @@ public class DocumentController {
         String url = documentService.getDocumentDownloadUrl(id);
         // Return URL as JSON object
         return ResponseEntity.ok("{\"url\":\"" + url + "\"}");
+    }
+
+    @PostMapping("/{id}/tags")
+    public ResponseEntity<DocumentDto> addTagToDocument(@PathVariable Long id, @RequestBody Tag tagRequest) {
+        return documentRepository.findById(id).map(document -> {
+            // Find existing tag or create new one
+            Tag tag = tagRepository.findByName(tagRequest.getName())
+                    .orElseGet(() -> {
+                        Tag newTag = new Tag();
+                        newTag.setName(tagRequest.getName());
+                        return tagRepository.save(newTag);
+                    });
+
+            document.getTags().add(tag);
+            Document savedDoc = documentRepository.save(document);
+
+            // Trigger Re-Indexing
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE_NAME,
+                    RabbitMQConfig.SEARCH_ROUTING_KEY,
+                    String.valueOf(savedDoc.getId())
+            );
+
+            return ResponseEntity.ok(documentMapper.entityToDto(savedDoc));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}/tags/{tagId}")
+    public ResponseEntity<DocumentDto> removeTagFromDocument(@PathVariable Long id, @PathVariable Long tagId) {
+        return documentRepository.findById(id).map(document -> {
+
+            // Remove the tag if it exists
+            document.getTags().removeIf(tag -> tag.getId().equals(tagId));
+
+            Document savedDoc = documentRepository.save(document);
+
+            // Trigger Re-Indexing
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE_NAME,
+                    RabbitMQConfig.SEARCH_ROUTING_KEY,
+                    String.valueOf(savedDoc.getId())
+            );
+
+            return ResponseEntity.ok(documentMapper.entityToDto(savedDoc));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

@@ -3,6 +3,7 @@ package at.technikum_wien.swen3.paperless.mapper;
 import at.technikum_wien.swen3.paperless.dto.DocumentDto;
 import at.technikum_wien.swen3.paperless.entity.Document;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -12,5 +13,6 @@ public interface DocumentMapper {
 
     Document dtoToEntity(DocumentDto documentDto);
 
+    @Mapping(source = "tags", target = "tags")
     List<DocumentDto> entityToDto(List<Document> documents);
 }

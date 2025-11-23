@@ -1,3 +1,8 @@
+export interface TagDto {
+    id: number;
+    name: string;
+}
+
 export interface DocumentDto {
 	id: number;
 	title: string;
@@ -7,6 +12,7 @@ export interface DocumentDto {
 	status: string;
 	summary: string;
     fileSize: number;
+	tags?: TagDto[];
 }
 
 const API_BASE = '/api/documents';
@@ -76,4 +82,30 @@ export async function getDownloadUrl(id: number): Promise<string> {
     }
     const data = await response.json();
     return data.url;
+}
+
+export async function searchDocuments(query: string): Promise<DocumentDto[]> {
+    const response = await fetch(`${API_BASE}/search?query=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+        throw new Error('Failed to search documents');
+    }
+    return await response.json();
+}
+
+export async function addTag(docId: number, tagName: string): Promise<DocumentDto> {
+    const response = await fetch(`${API_BASE}/${docId}/tags`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: tagName })
+    });
+    if (!response.ok) throw new Error('Failed to add tag');
+    return await response.json();
+}
+
+export async function removeTag(docId: number, tagId: number): Promise<DocumentDto> {
+    const response = await fetch(`${API_BASE}/${docId}/tags/${tagId}`, {
+        method: 'DELETE'
+    });
+    if (!response.ok) throw new Error('Failed to remove tag');
+    return await response.json();
 }
