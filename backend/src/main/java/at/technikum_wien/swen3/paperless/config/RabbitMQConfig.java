@@ -26,6 +26,9 @@ public class RabbitMQConfig {
     public static final String GENAI_ROUTING_KEY = "document.genai";
     public static final String GENAI_RESULT_ROUTING_KEY = "document.genai.result";
 
+    public static final String SEARCH_QUEUE_NAME = "search-queue";
+    public static final String SEARCH_ROUTING_KEY = "document.search";
+
     @Bean
     Queue queue() {
         return new Queue(QUEUE_NAME, false);
@@ -44,6 +47,11 @@ public class RabbitMQConfig {
     @Bean
     Queue genaiResultQueue() {
         return new Queue(GENAI_RESULT_QUEUE_NAME, false);
+    }
+
+    @Bean
+    Queue searchQueue() {
+        return new Queue(SEARCH_QUEUE_NAME, false);
     }
 
     @Bean
@@ -69,6 +77,11 @@ public class RabbitMQConfig {
     @Bean
     Binding genaiResultBinding(Queue genaiResultQueue, TopicExchange exchange) {
         return BindingBuilder.bind(genaiResultQueue).to(exchange).with(GENAI_RESULT_ROUTING_KEY);
+    }
+
+    @Bean
+    Binding searchBinding(Queue searchQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(searchQueue).to(exchange).with(SEARCH_ROUTING_KEY);
     }
 
     @Bean

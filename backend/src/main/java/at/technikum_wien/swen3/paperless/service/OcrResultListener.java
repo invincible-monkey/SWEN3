@@ -34,6 +34,13 @@ public class OcrResultListener {
                         RabbitMQConfig.GENAI_ROUTING_KEY,
                         String.valueOf(document.getId())
                 );
+
+                log.info("Sending message for document ID {} to Search Indexing queue (OCR Content).", document.getId());
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.EXCHANGE_NAME,
+                        RabbitMQConfig.SEARCH_ROUTING_KEY,
+                        String.valueOf(document.getId())
+                );
             } else {
                 log.error("OCR failed for document ID: {}. Reason: {}", document.getId(), result.getErrorDetails());
                 documentRepository.save(document);
