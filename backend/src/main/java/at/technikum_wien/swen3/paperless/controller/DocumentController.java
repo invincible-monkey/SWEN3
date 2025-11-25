@@ -41,18 +41,18 @@ public class DocumentController {
 
     @GetMapping("/search")
     public List<DocumentDto> searchDocuments(@RequestParam String query) {
-        // 1. Search method
+        // call search method
         List<DocumentSearchEntity> searchResults = elasticSearchRepository.searchByQuery(query);
 
-        // 2. Extract the IDs
+        // extract IDs
         List<Long> ids = searchResults.stream()
                 .map(DocumentSearchEntity::getId)
                 .collect(Collectors.toList());
 
-        // 3. Fetch full details from the Database
+        // fetch full details from DB
         List<Document> docs = documentRepository.findAllById(ids);
 
-        // 4. Map to DTOs so the frontend gets exactly what it expects
+        // map to DTOs, so frontend gets exactly what it expects
         return docs.stream()
                 .map(documentMapper::entityToDto)
                 .collect(Collectors.toList());
@@ -98,7 +98,6 @@ public class DocumentController {
     @PostMapping("/{id}/tags")
     public ResponseEntity<DocumentDto> addTagToDocument(@PathVariable Long id, @RequestBody Tag tagRequest) {
         return documentRepository.findById(id).map(document -> {
-            // Find existing tag or create new one
             Tag tag = tagRepository.findByName(tagRequest.getName())
                     .orElseGet(() -> {
                         Tag newTag = new Tag();
@@ -109,7 +108,6 @@ public class DocumentController {
             document.getTags().add(tag);
             Document savedDoc = documentRepository.save(document);
 
-            // Trigger Re-Indexing
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.EXCHANGE_NAME,
                     RabbitMQConfig.SEARCH_ROUTING_KEY,
@@ -124,12 +122,10 @@ public class DocumentController {
     public ResponseEntity<DocumentDto> removeTagFromDocument(@PathVariable Long id, @PathVariable Long tagId) {
         return documentRepository.findById(id).map(document -> {
 
-            // Remove the tag if it exists
             document.getTags().removeIf(tag -> tag.getId().equals(tagId));
 
             Document savedDoc = documentRepository.save(document);
 
-            // Trigger Re-Indexing
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.EXCHANGE_NAME,
                     RabbitMQConfig.SEARCH_ROUTING_KEY,

@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 public interface DocumentSearchMapper {
     DocumentSearchMapper INSTANCE = Mappers.getMapper(DocumentSearchMapper.class);
 
-    // We map the database 'id' directly to the elastic 'id'
     @Mapping(target = "id", source = "id")
     @Mapping(target = "tags", source = "tags")
     DocumentSearchEntity entityToSearchEntity(Document document);

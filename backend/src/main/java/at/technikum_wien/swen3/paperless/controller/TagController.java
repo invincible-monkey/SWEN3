@@ -20,7 +20,6 @@ public class TagController {
 
     @PostMapping
     public Tag createTag(@RequestBody Tag tag) {
-        // Simple check to return existing tag if it exists
         return tagRepository.findByName(tag.getName())
                 .orElseGet(() -> tagRepository.save(tag));
     }
