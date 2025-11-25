@@ -43,6 +43,7 @@ public class Document {
     @Column
     private long fileSize;
 
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "document_tags",
