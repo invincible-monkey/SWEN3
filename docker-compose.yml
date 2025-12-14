@@ -101,6 +101,8 @@ services:
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
       ELASTIC_URL: http://elasticsearch:9200
+    volumes:
+      - ./import:/import
 
   paperless-ui:
     build: ./frontend
