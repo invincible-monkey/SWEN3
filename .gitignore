@@ -4,6 +4,13 @@
 # Ignore environment files
 .env
 
+# Ignore all files in the import directory
+import/*
+!import/.gitkeep
+!import/processed/
+import/processed/*
+!import/processed/.gitkeep
+
 # Ignore macOS system files
 .DS_Store
 

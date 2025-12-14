@@ -36,7 +36,6 @@ def get_document_content(doc_id):
 def generate_summary(text_content):
     prompt = f"Please provide a concise, one-paragraph summary of the following document content:\n\n{text_content}"
     try:
-        # Use the new client.models.generate_content() syntax
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
