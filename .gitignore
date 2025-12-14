@@ -4,11 +4,12 @@
 # Ignore environment files
 .env
 
-# Ignore scanner import files
+# Ignore all files in the import directory
 import/*
-import/processed/*
-
 !import/.gitkeep
+!import/processed/
+import/processed/*
+!import/processed/.gitkeep
 
 # Ignore macOS system files
 .DS_Store
