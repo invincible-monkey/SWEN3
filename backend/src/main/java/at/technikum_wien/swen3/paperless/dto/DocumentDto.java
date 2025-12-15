@@ -19,5 +19,6 @@ public class DocumentDto {
     private String status;
     private String summary;
     private long fileSize;
+    private long accessCount;
     private List<TagDto> tags;
 }
