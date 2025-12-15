@@ -43,12 +43,12 @@ public class Document {
     @Column
     private long fileSize;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private long accessCount = 0;
+
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "document_tags",
-            joinColumns = @JoinColumn(name = "document_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+    @JoinTable(name = "document_tags", joinColumns = @JoinColumn(name = "document_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
 }

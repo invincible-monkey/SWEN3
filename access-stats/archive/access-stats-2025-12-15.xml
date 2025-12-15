@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<accessStatistics date="2025-12-15" source="external-analytics-system">
+    <entries>
+        <entry>
+            <documentId>1</documentId>
+            <accessCount>42</accessCount>
+        </entry>
+        
+        <entry>
+            <documentId>2</documentId>
+            <accessCount>17</accessCount>
+        </entry>
+        
+        <entry>
+            <documentId>3</documentId>
+            <accessCount>156</accessCount>
+        </entry>
+    </entries>
+</accessStatistics>
